@@ -1,0 +1,10 @@
+Trino ODBC Driver
+Copyright 2026 The Trino ODBC Driver contributors
+
+This product includes software developed by third parties; see THIRD-PARTY-NOTICES.md.
+Trino is a trademark of the Trino Software Foundation; this project is not affiliated with it.
+
+The Trino logo (packaging/assets/trino-logo.svg, and the icons and installer images generated from
+it) is a trademark of the Trino Software Foundation. It is used in the installers, icons and disk
+images of this driver only to indicate compatibility with Trino; no endorsement by the Trino
+Software Foundation is implied.

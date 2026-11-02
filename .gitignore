@@ -1,0 +1,56 @@
+# Build trees and packaging output
+build/
+build-*/
+dist/
+# Generated test assets (self-signed keys, test passwords, container secrets)
+tests/docker/trino/generated/
+# Logs and scratch
+*.log
+trino_odbc_*.log
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+# vcpkg checkout / manifest installs (packaging/windows/build.ps1 default: <repo>/.vcpkg)
+.vcpkg/
+vcpkg_installed/
+# CMake / IDE local state
+CMakeUserPresets.json
+compile_commands.json
+Testing/
+.cache/
+# Python
+__pycache__/
+*.pyc
+# Compiled / packaged artifacts that must never be committed
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.pkg
+*.deb
+*.rpm
+*.msi
+*.mez
+*.zip
+*.tar.gz
+a.out
+# Keys, certificates, keystores and local secrets (test assets are generated, never committed)
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+*.keytab
+.env
+*.env
+pass.txt

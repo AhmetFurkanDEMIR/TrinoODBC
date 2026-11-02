@@ -1,0 +1,134 @@
+; Trino ODBC driver -- example odbc.ini (DSN definitions).
+;
+; Copy the sections you need into /etc/odbc.ini (system DSNs) or ~/.odbc.ini (user DSNs). On macOS
+; with iODBC the files are /Library/ODBC/odbc.ini and ~/Library/ODBC/odbc.ini.
+; Every key is case-insensitive and accepts the aliases documented in docs/CONNECTION-OPTIONS.md
+; (for example Server= for Host=, Database= for Catalog=, Password= for PWD=). Boolean values
+; accept 1/0, true/false, yes/no, on/off. Values containing ';' must be enclosed in braces: {a;b}.
+;
+; "Driver=" must match the name registered in odbcinst.ini (see odbcinst.ini.in). Environment
+; variables TRINO_ODBC_LOG_LEVEL / TRINO_ODBC_LOG_PATH override the LogLevel / LogPath keys.
+
+[ODBC Data Sources]
+Trino=Trino ODBC Driver
+TrinoLDAP=Trino ODBC Driver
+TrinoJWT=Trino ODBC Driver
+TrinoKerberos=Trino ODBC Driver
+TrinoOAuth=Trino ODBC Driver
+TrinoMTLS=Trino ODBC Driver
+
+; ---------------------------------------------------------------------------------------------
+; Plain HTTP, no authentication (development clusters).
+; ---------------------------------------------------------------------------------------------
+[Trino]
+Driver=Trino ODBC Driver
+Description=Trino development cluster (no auth)
+Host=trino.example.com
+Port=8080
+Catalog=tpch
+Schema=tiny
+UID=analyst
+SSL=0
+; Source is reported as X-Trino-Source and shows up in the Trino UI.
+Source=trino-odbc
+; TimeZone defaults to Europe/Istanbul (project default); "system" = the operating-system zone.
+;TimeZone=system
+;LogLevel=0
+;LogPath=/tmp
+
+; ---------------------------------------------------------------------------------------------
+; LDAP / Active Directory password authentication (HTTP Basic over TLS). PWD may be omitted here
+; and supplied by the application (SQLConnect / connection string) instead.
+; ---------------------------------------------------------------------------------------------
+[TrinoLDAP]
+Driver=Trino ODBC Driver
+Description=Trino with LDAP authentication
+Host=trino.corp.example.com
+Port=8443
+Catalog=hive
+Schema=default
+AuthenticationType=LDAP
+UID=jdoe
+;PWD=secret
+SSL=1
+; Full = verify chain + host name (default); CA = chain only; None = trust everything (dev only).
+SSLVerification=Full
+; Corporate CA bundle in PEM format (leave unset to use the system trust store).
+;TrustedCerts=/etc/ssl/certs/corp-ca.pem
+UseSystemTrustStore=1
+MinTLSVersion=1.2
+; Session properties, extra credentials and roles use k=v pairs separated by ';' (brace-quoted).
+;SessionProperties={query_max_run_time=1h;hive.parquet_use_column_names=true}
+;ExtraCredentials={foo=bar;secret=xyz}
+;Roles={hive=ROLE{analyst};system=ALL}
+ClientTags=odbc,reporting
+
+; ---------------------------------------------------------------------------------------------
+; JWT / bearer token. AccessTokenFile re-reads a rotating token at every connect.
+; ---------------------------------------------------------------------------------------------
+[TrinoJWT]
+Driver=Trino ODBC Driver
+Description=Trino with JWT authentication
+Host=trino.corp.example.com
+Port=443
+AuthenticationType=JWT
+;AccessToken=eyJhbGciOi...
+AccessTokenFile=/var/run/secrets/trino-token
+SSL=1
+
+; ---------------------------------------------------------------------------------------------
+; Kerberos (SPNEGO via libcurl; needs a valid ticket cache, e.g. `kinit`).
+; ---------------------------------------------------------------------------------------------
+[TrinoKerberos]
+Driver=Trino ODBC Driver
+Description=Trino with Kerberos authentication
+Host=trino.corp.example.com
+Port=7778
+AuthenticationType=Kerberos
+KerberosServiceName=HTTP
+KerberosUseCanonicalHostname=1
+KerberosDelegation=0
+SSL=1
+TrustedCerts=/etc/security/trino-ca.pem
+
+; ---------------------------------------------------------------------------------------------
+; OAuth2 external browser flow (interactive desktop use).
+; ---------------------------------------------------------------------------------------------
+[TrinoOAuth]
+Driver=Trino ODBC Driver
+Description=Trino with OAuth2 (browser) authentication
+Host=trino.corp.example.com
+Port=443
+AuthenticationType=OAuth2
+ExternalAuthTimeout=120
+; open = launch the browser (default); print = only log the URL
+ExternalAuthRedirectHandler=open
+SSL=1
+
+; ---------------------------------------------------------------------------------------------
+; Mutual TLS with a client certificate (certificate authentication) plus performance tuning.
+; ---------------------------------------------------------------------------------------------
+[TrinoMTLS]
+Driver=Trino ODBC Driver
+Description=Trino with client certificate authentication
+Host=trino.corp.example.com
+Port=443
+AuthenticationType=Certificate
+ClientCert=/home/jdoe/.trino/client.pem
+ClientKey=/home/jdoe/.trino/client.key
+;ClientKeyPassword=changeit
+SSL=1
+; Spooled protocol (Trino >= 466): larger pages, parallel segment download.
+Spooling=1
+QueryDataEncoding=json+zstd,json+lz4,json
+TargetResultSize=16
+PrefetchPages=4
+MaxPrefetchBytes=64
+MaxParallelSegments=4
+; Type mapping knobs (see docs/TYPES.md).
+UseUnicodeSqlCharacterTypes=1
+DefaultStringColumnLength=65535
+; session (default) = in the TimeZone zone; utc, wallclock or string.
+TimestampWithTimeZoneMode=session
+IntervalMode=string
+UuidAsGuid=0

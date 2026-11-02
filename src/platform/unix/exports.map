@@ -1,0 +1,130 @@
+# GNU ld version script for libtrinoodbc.so.
+#
+# Every ODBC entry point implemented by the driver is listed explicitly so that the exported surface
+# is exactly the docs/design/IMPLEMENTATION-NOTES.md list (SQLDataSources / SQLDrivers / SQLCompleteAsync are driver-manager
+# functions and are deliberately absent). The Windows setup entry points (ConfigDSN*, ConfigDriver*)
+# are only compiled on Windows; they are covered by a glob so that an lld build with
+# --no-undefined-version does not fail on an undefined explicit name.
+#
+# Keep this file in sync with exports.macos and src/platform/win/trinoodbc.def.
+{
+  global:
+    # ---- ODBC 3.8 ANSI entry points -----------------------------------------------------------
+    SQLAllocHandle;
+    SQLFreeHandle;
+    SQLAllocEnv;
+    SQLAllocConnect;
+    SQLAllocStmt;
+    SQLFreeEnv;
+    SQLFreeConnect;
+    SQLConnect;
+    SQLDriverConnect;
+    SQLBrowseConnect;
+    SQLDisconnect;
+    SQLEndTran;
+    SQLTransact;
+    SQLGetInfo;
+    SQLGetFunctions;
+    SQLGetTypeInfo;
+    SQLSetEnvAttr;
+    SQLGetEnvAttr;
+    SQLSetConnectAttr;
+    SQLGetConnectAttr;
+    SQLSetConnectOption;
+    SQLGetConnectOption;
+    SQLSetStmtAttr;
+    SQLGetStmtAttr;
+    SQLSetStmtOption;
+    SQLGetStmtOption;
+    SQLPrepare;
+    SQLExecute;
+    SQLExecDirect;
+    SQLNativeSql;
+    SQLNumParams;
+    SQLDescribeParam;
+    SQLBindParameter;
+    SQLSetParam;
+    SQLParamOptions;
+    SQLParamData;
+    SQLPutData;
+    SQLCancel;
+    SQLCancelHandle;
+    SQLRowCount;
+    SQLMoreResults;
+    SQLCloseCursor;
+    SQLFreeStmt;
+    SQLGetCursorName;
+    SQLSetCursorName;
+    SQLSetPos;
+    SQLBulkOperations;
+    SQLBindCol;
+    SQLFetch;
+    SQLFetchScroll;
+    SQLExtendedFetch;
+    SQLGetData;
+    SQLNumResultCols;
+    SQLDescribeCol;
+    SQLColAttribute;
+    SQLColAttributes;
+    SQLTables;
+    SQLColumns;
+    SQLPrimaryKeys;
+    SQLForeignKeys;
+    SQLStatistics;
+    SQLSpecialColumns;
+    SQLProcedures;
+    SQLProcedureColumns;
+    SQLTablePrivileges;
+    SQLColumnPrivileges;
+    SQLGetDiagRec;
+    SQLGetDiagField;
+    SQLError;
+    SQLCopyDesc;
+    SQLGetDescField;
+    SQLSetDescField;
+    SQLGetDescRec;
+    SQLSetDescRec;
+    SQLSetScrollOptions;
+    # ---- Unicode entry points -----------------------------------------------------------------
+    SQLConnectW;
+    SQLDriverConnectW;
+    SQLBrowseConnectW;
+    SQLGetInfoW;
+    SQLGetTypeInfoW;
+    SQLSetConnectAttrW;
+    SQLGetConnectAttrW;
+    SQLSetConnectOptionW;
+    SQLGetConnectOptionW;
+    SQLSetStmtAttrW;
+    SQLGetStmtAttrW;
+    SQLPrepareW;
+    SQLExecDirectW;
+    SQLNativeSqlW;
+    SQLGetCursorNameW;
+    SQLSetCursorNameW;
+    SQLDescribeColW;
+    SQLColAttributeW;
+    SQLColAttributesW;
+    SQLTablesW;
+    SQLColumnsW;
+    SQLPrimaryKeysW;
+    SQLForeignKeysW;
+    SQLStatisticsW;
+    SQLSpecialColumnsW;
+    SQLProceduresW;
+    SQLProcedureColumnsW;
+    SQLTablePrivilegesW;
+    SQLColumnPrivilegesW;
+    SQLGetDiagRecW;
+    SQLGetDiagFieldW;
+    SQLErrorW;
+    SQLGetDescFieldW;
+    SQLSetDescFieldW;
+    SQLGetDescRecW;
+    SQLSetDescRecW;
+    # ---- Setup entry points (Windows only; globs never fail when undefined) --------------------
+    ConfigDSN*;
+    ConfigDriver*;
+  local:
+    *;
+};

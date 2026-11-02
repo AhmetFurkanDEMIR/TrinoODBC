@@ -1,0 +1,157 @@
+// Resources of trinoodbc.dll: the Trino logo icon, the DSN / connection dialog and the VERSIONINFO
+// block. Compiled by rc.exe (MSVC) or windres (mingw-w64). Coordinates are dialog units.
+#include <windows.h>
+#include "resource.h"
+
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(65001)
+
+// ---------------------------------------------------------------------------------------------
+// Icon: the Trino logo (16..256 px; generated from packaging/assets/trino-logo.svg by
+// packaging/assets/make_icons.sh). trinoodbc.ico lives next to this file; CMake adds this
+// directory to the resource compiler's include path so rc.exe and windres both find it.
+// Trino and the Trino logo are trademarks of the Trino Software Foundation; this driver is an
+// independent project and is not affiliated with or endorsed by it.
+// ---------------------------------------------------------------------------------------------
+IDI_TRINOODBC ICON "trinoodbc.ico"
+
+// ---------------------------------------------------------------------------------------------
+// DSN setup / connection dialog
+// Left column: data source, server, authentication, TLS. Right column: session, transfer/logging
+// and a hints box. The same template serves ConfigDSN and SQLDriverConnect prompting (setup.cpp
+// disables the data-source fields in the latter case).
+// ---------------------------------------------------------------------------------------------
+IDD_TRINO_DSN_DIALOG DIALOGEX 0, 0, 470, 373
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Trino ODBC Driver - Data Source Setup"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    // ---- Data source --------------------------------------------------------------------------
+    GROUPBOX        "Data source", IDC_STATIC, 7, 7, 225, 48
+    LTEXT           "Data source &name:", IDC_STATIC, 14, 21, 72, 8
+    EDITTEXT        IDC_DSN_NAME, 90, 18, 135, 12, ES_AUTOHSCROLL
+    LTEXT           "D&escription:", IDC_STATIC, 14, 36, 72, 8
+    EDITTEXT        IDC_DESCRIPTION, 90, 33, 135, 12, ES_AUTOHSCROLL
+
+    // ---- Server -------------------------------------------------------------------------------
+    GROUPBOX        "Server", IDC_STATIC, 7, 60, 225, 66
+    LTEXT           "&Host:", IDC_STATIC, 14, 74, 72, 8
+    EDITTEXT        IDC_HOST, 90, 71, 135, 12, ES_AUTOHSCROLL
+    LTEXT           "&Port:", IDC_STATIC, 14, 89, 72, 8
+    EDITTEXT        IDC_PORT, 90, 86, 50, 12, ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "(8080, or 443 with SSL)", IDC_STATIC, 145, 89, 80, 8
+    LTEXT           "&Catalog:", IDC_STATIC, 14, 104, 72, 8
+    EDITTEXT        IDC_CATALOG, 90, 101, 135, 12, ES_AUTOHSCROLL
+    LTEXT           "&Schema:", IDC_STATIC, 14, 119, 72, 8
+    EDITTEXT        IDC_SCHEMA, 90, 116, 135, 12, ES_AUTOHSCROLL
+
+    // ---- Authentication -----------------------------------------------------------------------
+    GROUPBOX        "Authentication", IDC_STATIC, 7, 131, 225, 96
+    LTEXT           "&Authentication:", IDC_STATIC, 14, 145, 72, 8
+    COMBOBOX        IDC_AUTH_TYPE, 90, 142, 135, 90, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&User:", IDC_STATIC, 14, 160, 72, 8
+    EDITTEXT        IDC_USER, 90, 157, 135, 12, ES_AUTOHSCROLL
+    LTEXT           "Pass&word:", IDC_STATIC, 14, 175, 72, 8
+    EDITTEXT        IDC_PASSWORD, 90, 172, 135, 12, ES_AUTOHSCROLL | ES_PASSWORD
+    CONTROL         "Sa&ve password in the data source (stored unencrypted)", IDC_SAVE_PASSWORD,
+                    "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 90, 187, 135, 10
+    LTEXT           "Access &token (JWT):", IDC_STATIC, 14, 203, 72, 8
+    EDITTEXT        IDC_TOKEN, 90, 200, 135, 12, ES_AUTOHSCROLL | ES_PASSWORD
+    LTEXT           "Kerberos, OAuth2 and certificate authentication take their credentials from the system.",
+                    IDC_STATIC, 14, 215, 211, 8
+
+    // ---- TLS ----------------------------------------------------------------------------------
+    GROUPBOX        "TLS / SSL", IDC_STATIC, 7, 232, 225, 96
+    CONTROL         "Use SS&L (https)", IDC_SSL, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 14, 245, 100, 10
+    LTEXT           "Verification:", IDC_STATIC, 14, 261, 72, 8
+    COMBOBOX        IDC_SSL_VERIFICATION, 90, 258, 135, 60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "CA certificate file:", IDC_STATIC, 14, 276, 72, 8
+    EDITTEXT        IDC_CA_FILE, 90, 273, 135, 12, ES_AUTOHSCROLL
+    LTEXT           "Client certificate:", IDC_STATIC, 14, 291, 72, 8
+    EDITTEXT        IDC_CLIENT_CERT, 90, 288, 135, 12, ES_AUTOHSCROLL
+    LTEXT           "Client key:", IDC_STATIC, 14, 306, 72, 8
+    EDITTEXT        IDC_CLIENT_KEY, 90, 303, 135, 12, ES_AUTOHSCROLL
+    LTEXT           "Key password:", IDC_STATIC, 14, 321, 72, 8
+    EDITTEXT        IDC_CLIENT_KEY_PASSWORD, 90, 318, 135, 12, ES_AUTOHSCROLL | ES_PASSWORD
+
+    // ---- Session (right column) ---------------------------------------------------------------
+    GROUPBOX        "Session", IDC_STATIC, 240, 7, 223, 118
+    LTEXT           "Session properties:", IDC_STATIC, 247, 21, 80, 8
+    EDITTEXT        IDC_SESSION_PROPERTIES, 330, 18, 126, 12, ES_AUTOHSCROLL
+    LTEXT           "Extra credentials:", IDC_STATIC, 247, 36, 80, 8
+    EDITTEXT        IDC_EXTRA_CREDENTIALS, 330, 33, 126, 12, ES_AUTOHSCROLL
+    LTEXT           "Roles:", IDC_STATIC, 247, 51, 80, 8
+    EDITTEXT        IDC_ROLES, 330, 48, 126, 12, ES_AUTOHSCROLL
+    // Editable drop-down: pick a common IANA zone or type any other name / offset. setup.cpp fills
+    // the list, pre-selects the driver default (kDefaultSessionTimeZone) and sets the note text.
+    LTEXT           "Time &zone (TimeZone):", IDC_STATIC, 247, 66, 80, 8
+    COMBOBOX        IDC_TIME_ZONE, 330, 63, 126, 160, CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Default: UTC+3 Türkiye / Istanbul (Europe/Istanbul). Change it if your data needs another zone; 'system' = Windows zone.",
+                    IDC_TIME_ZONE_NOTE, 247, 79, 209, 25
+    LTEXT           "Source (X-Trino-Source):", IDC_STATIC, 247, 110, 80, 8
+    EDITTEXT        IDC_SOURCE, 330, 107, 126, 12, ES_AUTOHSCROLL
+
+    // ---- Transfer & logging -------------------------------------------------------------------
+    GROUPBOX        "Result transfer and logging", IDC_STATIC, 240, 130, 223, 78
+    CONTROL         "Use the spooled protocol (Trino 466+, faster large results)", IDC_SPOOLING,
+                    "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 247, 143, 210, 10
+    LTEXT           "Target result size (MB):", IDC_STATIC, 247, 159, 80, 8
+    EDITTEXT        IDC_TARGET_RESULT_SIZE, 330, 156, 40, 12, ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "1 - 128", IDC_STATIC, 375, 159, 40, 8
+    LTEXT           "Log level:", IDC_STATIC, 247, 174, 80, 8
+    COMBOBOX        IDC_LOG_LEVEL, 330, 171, 126, 90, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Log path (file or folder):", IDC_STATIC, 247, 189, 80, 8
+    EDITTEXT        IDC_LOG_PATH, 330, 186, 126, 12, ES_AUTOHSCROLL
+
+    // ---- Hints --------------------------------------------------------------------------------
+    GROUPBOX        "Hints", IDC_STATIC, 240, 213, 223, 115
+    LTEXT           "", IDC_HINTS, 247, 225, 210, 99
+
+    // ---- Logo + trademark notice ----------------------------------------------------------------
+    CONTROL         IDI_TRINOODBC, IDC_STATIC, "Static", SS_ICON | SS_REALSIZECONTROL, 7, 333, 16, 16
+    LTEXT           "Trino and the Trino logo are trademarks of the Trino Software Foundation. This driver is an independent project and is not affiliated with or endorsed by the Trino Software Foundation.",
+                    IDC_TRADEMARK_NOTE, 28, 333, 435, 16
+
+    // ---- Buttons ------------------------------------------------------------------------------
+    PUSHBUTTON      "&Test connection", IDC_TEST_CONNECTION, 7, 352, 70, 14
+    LTEXT           "", IDC_STATUS, 82, 355, 268, 10, SS_LEFTNOWORDWRAP | SS_PATHELLIPSIS
+    DEFPUSHBUTTON   "OK", IDOK, 355, 352, 50, 14
+    PUSHBUTTON      "Cancel", IDCANCEL, 413, 352, 50, 14
+END
+
+// ---------------------------------------------------------------------------------------------
+// Version information
+// ---------------------------------------------------------------------------------------------
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION    TRINO_ODBC_RC_FILEVERSION
+ PRODUCTVERSION TRINO_ODBC_RC_PRODUCTVERSION
+ FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+ FILEFLAGS      VS_FF_DEBUG
+#else
+ FILEFLAGS      0x0L
+#endif
+ FILEOS         VOS_NT_WINDOWS32
+ FILETYPE       VFT_DLL
+ FILESUBTYPE    VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName",      TRINO_ODBC_RC_COMPANY_NAME
+            VALUE "FileDescription",  TRINO_ODBC_RC_FILE_DESCRIPTION
+            VALUE "FileVersion",      TRINO_ODBC_RC_FILEVERSION_STR
+            VALUE "InternalName",     TRINO_ODBC_RC_INTERNAL_NAME
+            VALUE "LegalCopyright",   TRINO_ODBC_RC_COPYRIGHT
+            VALUE "LegalTrademarks",  TRINO_ODBC_RC_TRADEMARKS
+            VALUE "OriginalFilename", TRINO_ODBC_RC_ORIGINAL_FILENAME
+            VALUE "ProductName",      TRINO_ODBC_RC_PRODUCT_NAME
+            VALUE "ProductVersion",   TRINO_ODBC_RC_PRODUCTVERSION_STR
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

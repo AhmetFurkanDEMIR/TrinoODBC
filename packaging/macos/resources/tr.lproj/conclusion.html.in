@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>Trino ODBC Driver</title><style>
+<!--@STYLE@-->
+</style></head>
+<body>
+<div class="head">
+  <img src="@LOGO_DATA_URI@" alt="Trino logosu">
+  <div><h1>Trino ODBC Driver @VERSION@ kuruldu</h1><p class="sub">@DRIVER_MANAGER_LABEL@ &middot; macOS @ARCH@</p></div>
+</div>
+
+<h2>Kurulan dosyalar</h2>
+<ul>
+  <li><code>@INSTALL_DIR@/lib/libtrinoodbc.dylib</code> &mdash; sürücü (ve gereken kütüphaneler)</li>
+  <li><code>@INSTALL_DIR@/share/odbc.ini.example</code> &mdash; her kimlik doğrulama türü için bir DSN</li>
+  <li><code>@INSTALL_DIR@/docs/</code> &mdash; belgeler (<code>INSTALL-MACOS.md</code>, <code>CONNECTION-OPTIONS.md</code>)</li>
+</ul>
+<p>Sürücü <b>Trino ODBC Driver</b> adıyla @REGISTERED_TR@.</p>
+
+<h2>Veri kaynağı (DSN) tanımlama</h2>
+<p>@DSN_FILES_TR@ şu bölümü ekleyin:</p>
+<pre>[ODBC Data Sources]
+TrinoProd=Trino ODBC Driver
+
+[TrinoProd]
+Driver=Trino ODBC Driver
+Host=trino-sunucunuz
+Port=8443
+AuthenticationType=LDAP
+UID=kullanici-adiniz
+SSL=1
+Catalog=hive
+Schema=default
+; varsayılan Europe/Istanbul (UTC+03:00); başka bir IANA saat dilimi ya da "system"
+;TimeZone=system</pre>
+<p>Ardından <code>@TEST_COMMAND@</code> ile deneyin.</p>
+
+<p class="fine">Trino logosu Trino Software Foundation'ın ticari markasıdır ve yalnızca uyumluluğu
+belirtmek için gösterilir; herhangi bir onay anlamı taşımaz.</p>
+</body>
+</html>

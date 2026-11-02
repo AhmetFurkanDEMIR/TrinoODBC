@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Trino ODBC Driver</title><style>
+<!--@STYLE@-->
+</style></head>
+<body>
+<div class="head">
+  <img src="@LOGO_DATA_URI@" alt="Trino logo">
+  <div><h1>Trino ODBC Driver @VERSION@</h1><p class="sub">ODBC 3.8, Unicode &middot; @DRIVER_MANAGER_LABEL@ &middot; macOS @ARCH@</p></div>
+</div>
+
+<p>This package installs the Trino ODBC driver, built for the <b>@DRIVER_MANAGER_LABEL@</b> driver
+manager, into <code>@INSTALL_DIR@</code> and registers it as <b>Trino ODBC Driver</b> @REGISTRATION@.</p>
+<p>@DRIVER_MANAGER_USERS@</p>
+
+<div class="tz">
+<h2>Default session time zone: Europe/Istanbul (Turkey, UTC+03:00)</h2>
+<p>Unless a data source says otherwise, the driver runs the Trino session in
+<code>Europe/Istanbul</code> and returns <code>timestamp with time zone</code> values as Istanbul
+wall-clock time. You can change this for every data source (DSN) or connection string with the
+<code>TimeZone</code> key in <code>odbc.ini</code>:</p>
+<ul>
+  <li><code>TimeZone=Europe/Berlin</code> &mdash; any IANA zone name, or a fixed offset such as <code>+05:30</code></li>
+  <li><code>TimeZone=system</code> &mdash; the time zone of this Mac</li>
+  <li><code>TimestampWithTimeZoneMode=utc</code> &mdash; zoned timestamps in UTC</li>
+</ul>
+<p>The time zone is a per-DSN setting, so the Installer does not ask for it; the last page shows a
+DSN with the <code>TimeZone</code> line.</p>
+</div>
+
+<p class="fine">The Trino logo is a trademark of the Trino Software Foundation and is shown only to
+indicate compatibility with Trino. This driver is an independent open-source project, not
+affiliated with or endorsed by the Trino Software Foundation.</p>
+</body>
+</html>

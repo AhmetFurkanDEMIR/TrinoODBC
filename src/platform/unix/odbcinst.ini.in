@@ -1,0 +1,33 @@
+; Trino ODBC driver -- odbcinst.ini template.
+;
+; Placeholders (replaced by packaging/linux/register_driver.sh, packaging/macos/postinstall.sh or by
+; hand):
+;   @TRINO_ODBC_DRIVER_NAME@   registered driver name (default: "Trino ODBC Driver")
+;   @TRINO_ODBC_DRIVER_PATH@   absolute path of libtrinoodbc.so / libtrinoodbc.dylib
+;   @TRINO_ODBC_VERSION@       driver version (default: 1.0.0)
+;
+; Usage with unixODBC:   odbcinst -i -d -f <this file, placeholders substituted, WITHOUT the
+;                        [ODBC Drivers] section and the comment lines> -- odbcinst installs every
+;                        section of the file as a driver, so leaving [ODBC Drivers] in would register
+;                        a phantom driver called "ODBC Drivers" (the packaging scripts strip it)
+; Usage with iODBC:      merge the [ODBC Drivers] entry and append the driver section to
+;                        /Library/ODBC/odbcinst.ini (macOS) or ~/.odbcinst.ini
+;
+; There is deliberately no Setup= key: on Unix the library exports no ConfigDSN /
+; ODBCINSTGetProperties, so a GUI administrator that loaded it as a setup library would fail.
+;
+; The same section format is understood by unixODBC, iODBC and the Starburst/Simba driver's
+; odbcinst.ini, so a DSN written for that driver only needs the Driver= line changed.
+
+[ODBC Drivers]
+@TRINO_ODBC_DRIVER_NAME@=Installed
+
+[@TRINO_ODBC_DRIVER_NAME@]
+Description=Trino ODBC Driver @TRINO_ODBC_VERSION@ (ODBC 3.8, Unicode)
+Driver=@TRINO_ODBC_DRIVER_PATH@
+APILevel=2
+ConnectFunctions=YYN
+DriverODBCVer=03.80
+FileUsage=0
+SQLLevel=1
+UsageCount=1

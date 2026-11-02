@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>Trino ODBC Driver</title><style>
+<!--@STYLE@-->
+</style></head>
+<body>
+<div class="head">
+  <img src="@LOGO_DATA_URI@" alt="Trino logosu">
+  <div><h1>Trino ODBC Driver @VERSION@</h1><p class="sub">ODBC 3.8, Unicode &middot; @DRIVER_MANAGER_LABEL@ &middot; macOS @ARCH@</p></div>
+</div>
+
+<p>Bu paket, <b>@DRIVER_MANAGER_LABEL@</b> sürücü yöneticisi için derlenmiş Trino ODBC sürücüsünü
+<code>@INSTALL_DIR@</code> altına kurar ve <b>Trino ODBC Driver</b> adıyla @REGISTRATION_TR@.</p>
+<p>@DRIVER_MANAGER_USERS_TR@</p>
+
+<div class="tz">
+<h2>Varsayılan oturum saat dilimi: Europe/Istanbul (Türkiye, UTC+03:00)</h2>
+<p>Veri kaynağında başka bir değer verilmedikçe sürücü Trino oturumunu <code>Europe/Istanbul</code>
+saat diliminde çalıştırır ve <code>timestamp with time zone</code> değerlerini İstanbul yerel saati
+olarak döndürür. Bunu her veri kaynağı (DSN) ya da bağlantı dizesi için <code>odbc.ini</code>
+dosyasındaki <code>TimeZone</code> anahtarıyla değiştirebilirsiniz:</p>
+<ul>
+  <li><code>TimeZone=Europe/Berlin</code> &mdash; herhangi bir IANA saat dilimi adı ya da <code>+05:30</code> gibi sabit bir fark</li>
+  <li><code>TimeZone=system</code> &mdash; bu Mac'in saat dilimi</li>
+  <li><code>TimestampWithTimeZoneMode=utc</code> &mdash; saat dilimli zaman damgaları UTC olarak</li>
+</ul>
+<p>Saat dilimi DSN başına bir ayar olduğundan kurulum programı bunu sormaz; son sayfada
+<code>TimeZone</code> satırı içeren bir DSN örneği gösterilir.</p>
+</div>
+
+<p class="fine">Trino logosu Trino Software Foundation'ın ticari markasıdır ve yalnızca Trino ile
+uyumluluğu belirtmek için gösterilir. Bu sürücü bağımsız bir açık kaynak projesidir; Trino Software
+Foundation ile bağlantılı değildir ve onun tarafından onaylanmamıştır.</p>
+</body>
+</html>

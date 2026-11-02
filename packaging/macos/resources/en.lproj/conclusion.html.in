@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Trino ODBC Driver</title><style>
+<!--@STYLE@-->
+</style></head>
+<body>
+<div class="head">
+  <img src="@LOGO_DATA_URI@" alt="Trino logo">
+  <div><h1>Trino ODBC Driver @VERSION@ is installed</h1><p class="sub">@DRIVER_MANAGER_LABEL@ &middot; macOS @ARCH@</p></div>
+</div>
+
+<h2>Installed files</h2>
+<ul>
+  <li><code>@INSTALL_DIR@/lib/libtrinoodbc.dylib</code> &mdash; the driver (and the libraries it needs)</li>
+  <li><code>@INSTALL_DIR@/share/odbc.ini.example</code> &mdash; a DSN for every authentication type</li>
+  <li><code>@INSTALL_DIR@/docs/</code> &mdash; the documentation (<code>INSTALL-MACOS.md</code>, <code>CONNECTION-OPTIONS.md</code>)</li>
+</ul>
+<p>The driver is registered as <b>Trino ODBC Driver</b> @REGISTRATION@.</p>
+
+<h2>Register a data source (DSN)</h2>
+<p>Add a section to @DSN_FILES@:</p>
+<pre>[ODBC Data Sources]
+TrinoProd=Trino ODBC Driver
+
+[TrinoProd]
+Driver=Trino ODBC Driver
+Host=your-trino-host
+Port=8443
+AuthenticationType=LDAP
+UID=your-user
+SSL=1
+Catalog=hive
+Schema=default
+; default Europe/Istanbul (UTC+03:00); another IANA zone or "system"
+;TimeZone=system</pre>
+<p>Then test it with <code>@TEST_COMMAND@</code>.</p>
+
+<p class="fine">The Trino logo is a trademark of the Trino Software Foundation, shown only to
+indicate compatibility; no endorsement is implied.</p>
+</body>
+</html>

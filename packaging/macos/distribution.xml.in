@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Product archive definition used by build_pkg.sh (productbuild -distribution). build_pkg.sh
+     substitutes the @...@ placeholders; the resources (background, welcome/conclusion panes,
+     license) come from packaging/macos/resources/ and the repository's LICENSE. -->
+<installer-gui-script minSpecVersion="2">
+    <title>@TITLE@</title>
+    <background file="@BACKGROUND@" alignment="bottomleft" scaling="proportional"/>
+    <background-darkAqua file="@BACKGROUND_DARK@" alignment="bottomleft" scaling="proportional"/>
+    <welcome file="welcome.html" mime-type="text/html"/>
+    <license file="LICENSE.txt" mime-type="text/plain"/>
+    <conclusion file="conclusion.html" mime-type="text/html"/>
+    <options customize="never" require-scripts="true" hostArchitectures="@ARCH@"/>
+    <domains enable_localSystem="true" enable_anywhere="false" enable_currentUserHome="false"/>
+    <choices-outline>
+        <line choice="default">
+            <line choice="@PKG_ID@"/>
+        </line>
+    </choices-outline>
+    <choice id="default"/>
+    <choice id="@PKG_ID@" visible="false" title="@TITLE@">
+        <pkg-ref id="@PKG_ID@"/>
+    </choice>
+    <pkg-ref id="@PKG_ID@" version="@VERSION@" onConclusion="none">@COMPONENT_PKG@</pkg-ref>
+</installer-gui-script>

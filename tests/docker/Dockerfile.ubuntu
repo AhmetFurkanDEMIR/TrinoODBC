@@ -1,0 +1,121 @@
+# Ubuntu 24.04 + unixODBC build-and-test image for the Trino ODBC driver.
+#
+# Every stage runs one step of the Linux CI pipeline, so a successful `docker build` means: the driver
+# compiled with -DTRINO_ODBC_DRIVER_MANAGER=unixodbc, the unit tests passed, the integration tests
+# passed against the Python mock Trino (--mock), and the driver works through the unixODBC driver
+# manager (odbcinst registration + isql smoke test with a DSN and with a connection string).
+#
+#   tests/docker/run_linux_tests.sh                 (streams the source tree as the build context)
+#   docker build -f tests/docker/Dockerfile.ubuntu -t trino-odbc-linux-test .
+#
+# Build arguments:
+#   BASE_IMAGE           ubuntu:24.04 (default) or an image that already carries the toolchain, e.g.
+#                        one made with "run_linux_tests.sh --target toolchain --tag trino-odbc-linux-base";
+#                        the apt step is skipped when every
+#                        package in TOOLCHAIN_PACKAGES is present, so such a base builds offline
+#   TOOLCHAIN_PACKAGES   apt packages to install (see the default below)
+#   BUILD_TYPE           CMake build type (Release)
+#   CMAKE_EXTRA_ARGS     extra configure arguments, e.g. "-DTRINO_ODBC_WERROR=ON"
+#   ISQL_MOCK_PORT       port of the mock server used by the isql smoke test (18090)
+#
+# Stages: toolchain -> build -> unit-tests -> integration-tests -> dm-smoke (default target). Plain
+# Dockerfile syntax only (no BuildKit heredocs or mounts) so it builds with every engine version.
+ARG BASE_IMAGE=ubuntu:24.04
+
+# ---- toolchain -----------------------------------------------------------------------------------
+FROM ${BASE_IMAGE} AS toolchain
+ARG DEBIAN_FRONTEND=noninteractive
+# odbcinst is its own package on Debian/Ubuntu (unixodbc only ships isql/iusql); tzdata gives the
+# driver's TZif reader /usr/share/zoneinfo; openssl backs the mock's TLS certificate generator.
+ARG TOOLCHAIN_PACKAGES="build-essential cmake ninja-build git ca-certificates curl unixodbc odbcinst unixodbc-dev libcurl4-openssl-dev libzstd-dev liblz4-dev libsimdjson-dev python3 openssl tzdata"
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    TZ=UTC
+RUN set -eu; \
+    if dpkg -s ${TOOLCHAIN_PACKAGES} >/dev/null 2>&1; then \
+        echo "toolchain packages already present in the base image; skipping apt"; \
+    else \
+        apt-get update \
+        && apt-get install -y --no-install-recommends ${TOOLCHAIN_PACKAGES} \
+        && rm -rf /var/lib/apt/lists/*; \
+    fi; \
+    echo "== toolchain =="; \
+    cmake --version | head -1; ninja --version; g++ --version | head -1; python3 --version; \
+    odbcinst --version; openssl version; \
+    test -d /usr/share/zoneinfo/America
+
+# ---- build ---------------------------------------------------------------------------------------
+FROM toolchain AS build
+ARG BUILD_TYPE=Release
+ARG CMAKE_EXTRA_ARGS=""
+WORKDIR /src
+COPY . /src
+# The driver is also installed to /usr/local so the driver-manager smoke test registers a real
+# install path, exactly as packaging/linux/register_driver.sh does on a user's machine.
+RUN set -eu; \
+    cmake -S /src -B /build -G Ninja \
+        -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+        -DTRINO_ODBC_DRIVER_MANAGER=unixodbc \
+        -DTRINO_ODBC_BUILD_TESTS=ON \
+        ${CMAKE_EXTRA_ARGS}; \
+    cmake --build /build --parallel; \
+    cmake --install /build --prefix /usr/local >/dev/null; \
+    test -f /build/libtrinoodbc.so; \
+    echo "== exported SQL* symbols: $(nm -D --defined-only /build/libtrinoodbc.so | awk '$2 == "T" && $3 ~ /^SQL/' | wc -l) =="; \
+    ldd /build/libtrinoodbc.so
+
+# ---- unit tests ----------------------------------------------------------------------------------
+FROM build AS unit-tests
+RUN /build/tests/trino_odbc_unit_tests
+
+# ---- integration tests against the mock Trino ----------------------------------------------------
+FROM unit-tests AS integration-tests
+ENV TRINO_ODBC_DRIVER=/build/libtrinoodbc.so \
+    TRINO_ODBC_MOCK_SERVER=/src/tests/mock_trino/mock_trino.py
+RUN set -eu; \
+    if [ ! -x /build/tests/trino_odbc_integration_tests ]; then \
+        echo "ERROR: /build/tests/trino_odbc_integration_tests was not built." >&2; \
+        echo "       CMake skips the target when a tests/integration/*.cpp file is missing; see the" >&2; \
+        echo "       'integration tests skipped: missing ...' lines in the configure output above." >&2; \
+        exit 1; \
+    fi; \
+    /build/tests/trino_odbc_integration_tests --mock
+
+# ---- driver-manager smoke test: odbcinst registration + isql through unixODBC --------------------
+FROM integration-tests AS dm-smoke
+ARG ISQL_MOCK_PORT=18090
+ENV ODBCINI=/etc/trino-odbc-test/odbc.ini
+RUN set -eu; \
+    driver="$(find /usr/local/lib -name libtrinoodbc.so -print -quit)"; \
+    test -n "$driver" || { echo "installed driver not found under /usr/local/lib" >&2; exit 1; }; \
+    /src/packaging/linux/register_driver.sh "$driver"; \
+    odbcinst -q -d -n "Trino ODBC Driver" | tee /tmp/odbcinst.out; \
+    grep -qx "Driver=$driver" /tmp/odbcinst.out; \
+    python3 /src/tests/mock_trino/mock_trino.py --port ${ISQL_MOCK_PORT} --spooling & mock=$!; \
+    trap 'kill $mock 2>/dev/null || true' EXIT; \
+    i=0; until curl -sf "http://127.0.0.1:${ISQL_MOCK_PORT}/mock/stats" >/dev/null; do \
+        i=$((i + 1)); [ "$i" -lt 150 ] || { echo "mock server did not start" >&2; exit 1; }; sleep 0.2; \
+    done; \
+    mkdir -p "$(dirname "$ODBCINI")"; \
+    printf '[ODBC Data Sources]\nTrinoMock=Trino ODBC Driver\n\n[TrinoMock]\nDriver=Trino ODBC Driver\nDescription=mock Trino for the isql smoke test\nHost=127.0.0.1\nPort=%s\nUID=test\nCatalog=mock\nSchema=demo\n' "${ISQL_MOCK_PORT}" > "$ODBCINI"; \
+    echo "== isql via DSN (odbc.ini through ODBCINI) =="; \
+    printf 'SELECT version()\n' | isql -v -b TrinoMock | tee /tmp/isql-dsn.out; \
+    grep -q '483-mock' /tmp/isql-dsn.out; \
+    echo "== isql via connection string (SQLDriverConnect) =="; \
+    printf 'SELECT 1\n' | isql -v -b -k "Driver=Trino ODBC Driver;Host=127.0.0.1;Port=${ISQL_MOCK_PORT};UID=test;Catalog=mock;Schema=demo" | tee /tmp/isql-k.out; \
+    grep -Eq '\| *1 *\|' /tmp/isql-k.out; \
+    echo "== isql catalog + data types (types_demo) =="; \
+    printf 'SELECT c_integer, c_varchar, c_timestamp3 FROM types_demo\n' | isql -v -b -c -d, TrinoMock | tee /tmp/isql-types.out; \
+    grep -q '^c_integer,c_varchar,c_timestamp3' /tmp/isql-types.out; \
+    echo "== iusql (wide entry points) =="; \
+    printf 'SELECT current_catalog\n' | iusql -v -b TrinoMock | tee /tmp/iusql.out; \
+    grep -q 'mock' /tmp/iusql.out; \
+    kill $mock; trap - EXIT; \
+    echo "unixODBC smoke test passed"
+
+# ---- final: everything built, tested and registered; handy for interactive debugging -------------
+FROM dm-smoke AS final
+LABEL org.opencontainers.image.title="trino-odbc-linux-test" \
+      org.opencontainers.image.description="Trino ODBC driver built with unixODBC on Ubuntu 24.04; unit, mock-integration and isql tests passed at build time"
+WORKDIR /build
+CMD ["/bin/bash"]

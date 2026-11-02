@@ -1,0 +1,16 @@
+/* Shared style of the Installer panes; build_pkg.sh inlines it into each rendered HTML page. */
+:root { color-scheme: light dark; }
+body { font: 13px/1.45 -apple-system, "Helvetica Neue", Helvetica, sans-serif; margin: 0 4px; }
+.head { display: flex; align-items: center; gap: 14px; margin: 4px 0 10px; }
+.head img { width: 72px; height: 72px; flex: none; }
+h1 { font-size: 18px; margin: 0; }
+.sub { opacity: .7; margin: 2px 0 0; }
+h2 { font-size: 13px; margin: 14px 0 4px; }
+p, ul { margin: 6px 0; }
+ul { padding-left: 18px; }
+code, pre { font: 12px/1.4 ui-monospace, Menlo, monospace; }
+code { background: rgba(127, 127, 127, .16); border-radius: 3px; padding: 0 3px; }
+pre { background: rgba(127, 127, 127, .12); border-radius: 6px; padding: 8px 10px; margin: 6px 0; white-space: pre-wrap; }
+.tz { border: 1px solid rgba(221, 0, 161, .55); background: rgba(221, 0, 161, .07); border-radius: 8px; padding: 8px 12px; margin: 10px 0; }
+.tz h2 { margin-top: 2px; }
+.fine { font-size: 11px; opacity: .65; margin-top: 14px; }
